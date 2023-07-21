@@ -11,8 +11,8 @@ int main() {
 	std::ifstream in;
 	in.open("test.txt");
 	TransportCatalogue transport_catalogue;
-	ReadDatabaseCreation(in,transport_catalogue);
-	ExecutionRequests(in, transport_catalogue);
+	ReadDatabase(in,transport_catalogue);
+	ExecuteRequests(in, transport_catalogue);
 	in.close();
 	
 }

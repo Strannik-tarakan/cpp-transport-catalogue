@@ -4,7 +4,7 @@
 #include <iterator>
 #include <algorithm>
 
-void TransportCatalogue::AddStop(const std::string& name, double lat, double lng, std::vector < std::pair<std::string, int>> distance_to) {
+void TransportCatalogue::AddStop(const std::string& name, double lat, double lng, const std::vector < std::pair<std::string, int>>& distance_to) {
 	Stop stop = { name,{lat,lng},{} };
 	auto stop_point = &stops_.emplace_back(stop);
 	stopname_to_stop_[stops_.back().name] =stop_point;
@@ -41,7 +41,7 @@ void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::
 	auto it = buses_.back().stops.begin();
 	auto next_it = std::next(it);
 	for (; next_it != buses_.back().stops.end(); ++it, ++next_it) {
-		distant += GetDistant((*it)->name, (*next_it)->name);
+		distant += GetDistance((*it)->name, (*next_it)->name);
 		result_geo += ComputeDistance((*it)->cordinat, (*next_it)->cordinat);
 	}
 	buses_.back().distant_bus.first = distant;
@@ -59,26 +59,24 @@ Bus* TransportCatalogue::GetInfoBus(const std::string& bus_name){
 	if (busname_to_bus_.count(bus_name)) {
 		return busname_to_bus_[bus_name];
 	}
-	std::cout << "Bus " << bus_name << ": not found";
-	return nullptr;
+	throw "Bus " +bus_name +": not found";
 }
 
 std::set<std::string_view> TransportCatalogue::GetInfoStop(const std::string& stop_name)
 {
 	if (FindStop(stop_name) == nullptr) {
-		std::cout << "Stop "<<stop_name <<": not found"<<std::endl;
-		return std::set<std::string_view>();
+		throw "Stop " + stop_name + ": not found";
 	}
-
+	
 	if (stopname_to_stop_[stop_name]->passing_buses.size() != 0) {
 		return stopname_to_stop_[stop_name]->passing_buses;
 	}
 
-	std::cout << "Stop " << stop_name << ": no buses" << std::endl;
-	return std::set<std::string_view>();
+	throw "Stop " + stop_name + ": no buses";
+	
 }
 
-double TransportCatalogue::GetDistant(std::string& stop_first, std::string& stop_last)
+double TransportCatalogue::GetDistance(std::string& stop_first, std::string& stop_last)
 {
 	if (distant_.count({ stop_first,stop_last }) != 0) {
 		return distant_[{stop_first, stop_last }];

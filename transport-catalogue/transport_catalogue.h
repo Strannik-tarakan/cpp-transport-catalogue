@@ -31,7 +31,7 @@ private:
 
 class TransportCatalogue {
 public:
-	void AddStop(const std::string& name, double lat, double lng, std::vector < std::pair<std::string, int>> distance_to);
+	void AddStop(const std::string& name, double lat, double lng,const std::vector < std::pair<std::string, int>>& distance_to);
 	void AddBus(const std::string& name, const std::vector<std::string>& stops);
 	void AddDistanceBetweenStops(std::string& stop_first, std::string& stop_last, const int distant);
 
@@ -40,7 +40,7 @@ public:
 
 	Bus* GetInfoBus(const std::string& bus_name);
 	std::set<std::string_view> GetInfoStop(const std::string& stop_name);
-	double GetDistant(std::string& stop_first, std::string& stop_last);
+	double GetDistance(std::string& stop_first, std::string& stop_last);
 	static double GetBusDistantGeo(const Bus& bus);
 
 private:

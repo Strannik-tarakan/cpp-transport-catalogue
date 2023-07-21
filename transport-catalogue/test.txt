@@ -18,4 +18,4 @@ Bus 750
 Bus 751
 Stop Samara
 Stop Prazhskaya
-Stop Biryulyovo Zapadnoye 
+Stop Biryulyovo Zapadnoye

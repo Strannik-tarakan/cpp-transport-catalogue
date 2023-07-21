@@ -23,5 +23,7 @@ struct Query
 	std::vector<StopQuery> stop_query;
 	std::vector<BusQuery> bus_query;
 };
+void ParsingStop(Query& query, size_t it, std::string& text);
+void ParsingBus(Query& query, size_t it, std::string& text);
 
-void ReadDatabaseCreation(std::istream& in, TransportCatalogue& transport_catalogue);
+void ReadDatabase(std::istream& in, TransportCatalogue& transport_catalogue);

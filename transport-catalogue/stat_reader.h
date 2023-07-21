@@ -7,4 +7,4 @@
 std::ostream& operator << (std::ostream& os, const Bus* bus);
 std::ostream& operator<<(std::ostream& os, const std::set<std::string_view>& osunset);
 
-void ExecutionRequests(std::istream& in, TransportCatalogue& transport_catalogue);
+void ExecuteRequests(std::istream& in, TransportCatalogue& transport_catalogue);
