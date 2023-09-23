@@ -1,6 +1,5 @@
 #pragma once
-
-#include "geo.h"
+#include "domain.h"
 
 #include <string>
 #include <string_view>
@@ -10,17 +9,7 @@
 #include <unordered_set>
 #include <set>
  
-struct Stop
-{
-	std::string name;
-	Coordinates cordinat;
-	std::set<std::string_view> passing_buses;
-};
-struct Bus {
-	std::string name;
-	std::vector<Stop*> stops;
-	std::pair<int, double> distant_bus;
-};
+
 
 class Hash_distant {
 public:
@@ -32,13 +21,14 @@ private:
 class TransportCatalogue {
 public:
 	void AddStop(const std::string& name, double lat, double lng,const std::vector < std::pair<std::string, int>>& distance_to);
-	void AddBus(const std::string& name, const std::vector<std::string>& stops);
+	void AddBus(const std::string& name, const std::vector<std::string>& stops, std::string last_stop);
 	void AddDistanceBetweenStops(std::string& stop_first, std::string& stop_last, const int distant);
 
 	Stop* FindStop(const std::string& stop_name);
 	Bus FindBus(const std::string& bus_name);
 
 	Bus* GetInfoBus(const std::string& bus_name);
+	const std::unordered_map<std::string_view, Bus*>& GetInfoAllBus();
 	std::set<std::string_view> GetInfoStop(const std::string& stop_name);
 	double GetDistance(std::string& stop_first, std::string& stop_last);
 	static double GetBusDistantGeo(const Bus& bus);
