@@ -102,4 +102,23 @@ private:
     double zoom_coeff_ = 0;
 };
 
-void DrawSvg(std::ostream& output, MapSettings& map_settings, std::map<std::string_view, Coordinates>& stops_on_buses, std::vector<Bus*>& buses);
+class MapRenderer {
+public:
+    MapRenderer(MapSettings& map_settings, std::map<std::string_view, Coordinates>& stops_on_buses, std::vector<Bus*>& buses);
+
+    void DrawSvg(std::ostream& output);
+
+private:
+    const MapSettings& map_settings;
+    const std::map<std::string_view, Coordinates>& stops_on_buses;
+    std::vector<Bus*>& buses;
+    const SphereProjector proj;
+    svg::Document document;
+
+    void AddRouteLines();
+    void AddNamesBuses();
+    void AddBreakpoints();
+    void AddNamesStops();
+};
+
+//void DrawSvg(std::ostream& output, MapSettings& map_settings, std::map<std::string_view, Coordinates>& stops_on_buses, std::vector<Bus*>& buses);

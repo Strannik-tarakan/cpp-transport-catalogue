@@ -3,7 +3,6 @@
 #include "request_handler.h"
 #include "geo.h"
 
-
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -12,7 +11,9 @@ int main() {
 	std::ifstream in;
 	TransportCatalogue transport_catalogue;
 	in.open("testjson.json");
-	ReadJson(in, transport_catalogue);
+	JSONReader json_reader(transport_catalogue);
+	json_reader.ReadJson(in);
+	json_reader.ConclusionJson(std::cout);
 
 	in.close();
 	
