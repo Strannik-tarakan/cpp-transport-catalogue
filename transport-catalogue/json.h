@@ -44,6 +44,8 @@ namespace json {
 
         const Array& AsArray() const;
         const Dict& AsMap() const;
+        Array& AsArray() ;
+        Dict& AsMap() ;
         int AsInt() const;
         const std::string& AsString() const;
         bool AsBool() const;

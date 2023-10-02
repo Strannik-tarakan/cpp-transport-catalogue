@@ -308,6 +308,18 @@ namespace json {
         }
         throw logic_error("wrong type");
     }
+    Array& Node::AsArray() {
+        if (IsArray()) {
+            return get<Array>(value_);
+        }
+        throw logic_error("wrong type");
+    }
+    Dict& Node::AsMap() {
+        if (IsMap()) {
+            return get<Dict>(value_);
+        }
+        throw logic_error("wrong type");
+    }
     int Node::AsInt() const {
         if (IsInt()) {
             return get<int>(value_);
