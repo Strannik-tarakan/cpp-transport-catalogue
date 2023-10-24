@@ -5,7 +5,7 @@
 #include <iostream>
 #include <algorithm>
 
-OutRequests ProcessRequest(AddQuery add_query, std::vector<DirectoryRequest> directory_requests, TransportCatalogue& transport_catalogue) {
+OutRequests ProcessRequest(AddQuery add_query, std::vector<DirectoryRequest> directory_requests, TransportCatalogue& transport_catalogue, RoutSettings rout_settings) {
 
     for (auto& stop : add_query.stop_query) {
         transport_catalogue.AddStop(stop.name, stop.lat, stop.lng, stop.distance_to);
@@ -17,7 +17,10 @@ OutRequests ProcessRequest(AddQuery add_query, std::vector<DirectoryRequest> dir
     for (auto& bus : add_query.bus_query) {
         transport_catalogue.AddBus(bus.name, bus.stops,bus.last_stop);
     }
-     
+    transport_catalogue.AddRoutingSetting(rout_settings.bus_wait_time, rout_settings.bus_velocity);
+    transport_catalogue.CreateGraph();
+    graph::Router router(transport_catalogue.GetGraph());
+
     OutRequests out_requests;
 
     for (const auto directory_request : directory_requests) {
@@ -30,6 +33,9 @@ OutRequests ProcessRequest(AddQuery add_query, std::vector<DirectoryRequest> dir
             }
             else if (directory_request.type == "Map") {
                 out_requests.push_back(0);
+            }
+            else if (directory_request.type == "Route") {
+                out_requests.push_back(transport_catalogue.GetOptimalRoute(directory_request.from_stop,directory_request.to_stop,router));
             }
         }
         catch (NoBuses error) {

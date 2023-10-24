@@ -28,10 +28,19 @@ private:
 	std::vector<DirectoryRequest> directory_requests;
 	OutRequests out_requests;
 	MapSettings map_settings;
+	RoutSettings routing_settings_;
+
 
 	void ProcessingBasicRequests(Array& base_requests);
 	void ProcessingStatisticsRequests(Array& stat_requests);
 	void ProcessingCardSettings(Dict& render_settings);
+	void ProcessingRoutingSettings(Dict& routing_settings);
+
+	void PrintQueryBus(std::ostream& output, size_t i);
+	void PrintQueryStop(std::ostream& output, size_t i);
+	void PrintQueryMap(std::ostream& output, size_t i,
+		std::map<std::string_view, Coordinates>& stops_on_buses, std::vector<Bus*>& buses);
+	void PrintQueryRoute(std::ostream& output, size_t i);
 };
 
 

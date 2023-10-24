@@ -27,12 +27,20 @@ struct AddQuery
 	std::vector<StopQuery> stop_query;
 	std::vector<BusQuery> bus_query;
 };
+struct RoutSettings {
+	int bus_wait_time;
+	double bus_velocity;
+};
 
 struct DirectoryRequest {
 	int id;
 	std::string type;
-	std::string name;
-};
-using OutRequests = std::vector< std::variant<Bus*, std::set<std::string_view>,std::string,int>>;
 
-OutRequests ProcessRequest(AddQuery query,std::vector<DirectoryRequest> directory_requests, TransportCatalogue& transport_catalogue);
+	std::string name;
+
+	std::string from_stop;
+	std::string to_stop;
+};
+using OutRequests = std::vector< std::variant<Bus*, std::set<std::string_view>,std::string,int, OptimalRoute>>;
+
+OutRequests ProcessRequest(AddQuery query,std::vector<DirectoryRequest> directory_requests, TransportCatalogue& transport_catalogue, RoutSettings rout_settings);

@@ -12,6 +12,7 @@ struct Stop
 	std::string name;
 	Coordinates cordinat;
 	std::set<std::string_view> passing_buses;
+	int id=-1;
 };
 struct Bus {
 	std::string name;
@@ -22,6 +23,7 @@ struct Bus {
 struct NotFound {
 	std::string type;
 	std::string name;
+	std::string name2 = "";
 };
 struct NoBuses {
 	std::string name;

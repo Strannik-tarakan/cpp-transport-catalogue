@@ -26,12 +26,14 @@ std::ostream& operator<<(std::ostream& os, const std::set<std::string_view>& osu
 		Array base_requests = json.at("base_requests").AsArray();
 		Array stat_requests = json.at("stat_requests").AsArray();
 		Dict render_settings = json.at("render_settings").AsMap();
-
+		Dict routing_settings = json.at("routing_settings").AsMap();
+		
 		ProcessingBasicRequests(base_requests);
         ProcessingStatisticsRequests(stat_requests);
 		ProcessingCardSettings(render_settings);
+		ProcessingRoutingSettings(routing_settings);
 
-		out_requests = ProcessRequest(add_query, directory_requests, transport_catalogue_);
+		out_requests = ProcessRequest(add_query, directory_requests, transport_catalogue_, routing_settings_);
 	}
 
 
@@ -64,64 +66,16 @@ std::ostream& operator<<(std::ostream& os, const std::set<std::string_view>& osu
 				continue;
 			}
 			if (directory_requests[i].type == "Bus") {
-
-				Bus* bus = std::get<Bus*>(out_requests[i]);
-				std::unordered_set<Stop*> uniqueStops;
-				for (const auto& stop : (*bus).stops) {
-					uniqueStops.insert(stop);
-				}
-
-				Print(Document{ Builder{}
-					.StartDict()
-					.Key("curvature"s).Value(static_cast<double>(bus->distant_bus.second))
-					.Key("request_id"s).Value(static_cast<int>(directory_requests[i].id))
-					.Key("route_length"s).Value(static_cast<double>(bus->distant_bus.first))
-					.Key("stop_count"s).Value(static_cast<double>((*bus).stops.size()))
-					.Key("unique_stop_count").Value(static_cast<double>(uniqueStops.size()))
-					.EndDict().Build()
-					
-					}, output);
-				output << std::endl;
+				PrintQueryBus(output,i);
 			}
 			else if (directory_requests[i].type == "Stop") {
-
-
-				output << "{" << std::endl;
-				output << "\"buses\": [" << std::endl;
-				output << std::get<std::set<std::string_view>>(out_requests[i]);
-				output << "]," << std::endl;
-				output << "\"request_id\" : " << directory_requests[i].id << std::endl;
-				output << "}" << std::endl;
+				PrintQueryStop(output, i);
 			}
 			else if (directory_requests[i].type == "Map") {
-				std::ifstream in;
-				std::ofstream out;
-				MapRenderer map_render(map_settings, stops_on_buses, buses);
-
-				output << "{" << std::endl;
-				output << "\"map\": " << std::endl;
-				out.open("svg.text");
-
-				map_render.DrawSvg(out);
-
-				in.open("svg.text");
-				Print(Document{
-					Builder{}
-					.StartDict()
-					.Key("map")
-					.Value(std::string((std::istreambuf_iterator<char>(in)),std::istreambuf_iterator<char>()))
-					.Key("request_id")
-					.Value(static_cast<double>(directory_requests[i].id))
-					.EndDict()
-					.Build()
-					}, output);
-				
-				in.close();
-				out.close();
-				output << "," << std::endl;
-				output << "\"request_id\" : " << directory_requests[i].id << std::endl;
-				output << "}" << std::endl;
-
+				PrintQueryMap(output, i,stops_on_buses,buses);
+			}
+			else if (directory_requests[i].type == "Route") {     
+				PrintQueryRoute(output, i);
 			}
 			if (i != out_requests.size() - 1) {
 				output << ",";
@@ -182,12 +136,16 @@ std::ostream& operator<<(std::ostream& os, const std::set<std::string_view>& osu
 	}
 	void JSONReader::ProcessingStatisticsRequests(Array& stat_requests) {
 		for (const auto& stat_request : stat_requests) {
-			Dict stop_bus = stat_request.AsMap();
+			Dict request = stat_request.AsMap();
 			DirectoryRequest directory_request;
-			directory_request.id = stop_bus.at("id").AsInt();
-			directory_request.type = stop_bus.at("type").AsString();
-			if (directory_request.type != "Map") {
-				directory_request.name = stop_bus.at("name").AsString();
+			directory_request.id = request.at("id").AsInt();
+			directory_request.type = request.at("type").AsString();
+			if (directory_request.type == "Bus"|| directory_request.type == "Stop") {
+				directory_request.name = request.at("name").AsString();
+			}
+			else if (directory_request.type == "Route") {
+				directory_request.from_stop = request.at("from").AsString();
+				directory_request.to_stop = request.at("to").AsString();
 			}
 
 			directory_requests.push_back(directory_request);
@@ -252,6 +210,102 @@ std::ostream& operator<<(std::ostream& os, const std::set<std::string_view>& osu
 				map_settings.color_palette.push_back(std::monostate{});
 			}
 		}
+	}
+	void JSONReader::ProcessingRoutingSettings(Dict& routing_settings)
+	{
+		routing_settings_.bus_velocity = routing_settings.at("bus_velocity").AsDouble();
+		routing_settings_.bus_wait_time = routing_settings.at("bus_wait_time").AsInt();
+
+	}
+
+	void JSONReader::PrintQueryBus(std::ostream& output, size_t i)
+	{
+		Bus* bus = std::get<Bus*>(out_requests[i]);
+		std::unordered_set<Stop*> uniqueStops;
+		for (const auto& stop : (*bus).stops) {
+			uniqueStops.insert(stop);
+		}
+
+		Print(Document{ Builder{}
+			.StartDict()
+			.Key("curvature"s).Value(static_cast<double>(bus->distant_bus.second))
+			.Key("request_id"s).Value(static_cast<int>(directory_requests[i].id))
+			.Key("route_length"s).Value(static_cast<double>(bus->distant_bus.first))
+			.Key("stop_count"s).Value(static_cast<double>((*bus).stops.size()))
+			.Key("unique_stop_count").Value(static_cast<double>(uniqueStops.size()))
+			.EndDict().Build()
+
+			}, output);
+		output << std::endl;
+	}
+	void JSONReader::PrintQueryStop(std::ostream& output, size_t i)
+	{
+		output << "{" << std::endl;
+		output << "\"buses\": [" << std::endl;
+		output << std::get<std::set<std::string_view>>(out_requests[i]);
+		output << "]," << std::endl;
+		output << "\"request_id\" : " << directory_requests[i].id << std::endl;
+		output << "}" << std::endl;
+	}
+	void JSONReader::PrintQueryMap(std::ostream& output, size_t i, 
+		std::map<std::string_view, Coordinates>& stops_on_buses, std::vector<Bus*>& buses){
+
+		std::ifstream in;
+		std::ofstream out;
+		MapRenderer map_render(map_settings, stops_on_buses, buses);
+
+		output << "{" << std::endl;
+		output << "\"map\": " << std::endl;
+		out.open("svg.text");
+
+		map_render.DrawSvg(out);
+
+		in.open("svg.text");
+		Print(Document{
+			Builder{}
+			.StartDict()
+			.Key("map")
+			.Value(std::string((std::istreambuf_iterator<char>(in)),std::istreambuf_iterator<char>()))
+			.Key("request_id")
+			.Value(static_cast<double>(directory_requests[i].id))
+			.EndDict()
+			.Build()
+			}, output);
+
+		in.close();
+		out.close();
+		output << "," << std::endl;
+		output << "\"request_id\" : " << directory_requests[i].id << std::endl;
+		output << "}" << std::endl;
+
+	}
+
+	void JSONReader::PrintQueryRoute(std::ostream& output, size_t i){
+		OptimalRoute route = std::get<OptimalRoute>(out_requests[i]);
+		Builder build;
+		build.StartDict()
+			.Key("request_id"s).Value(static_cast<int>(directory_requests[i].id))
+			.Key("total_time"s).Value(route.total_time)
+			.Key("items"s).StartArray();
+		for (int i = 0; i < route.elements.size(); ++i) {
+			build
+				.StartDict()
+				.Key("type").Value(route.elements[i].type)
+				.Key("stop_name").Value(std::string(route.elements[i].name))
+				.Key("time").Value(route.elements[i].time)
+				.EndDict();
+			++i;
+			build.StartDict()
+				.Key("type").Value(route.elements[i].type)
+				.Key("bus").Value(std::string(route.elements[i].name))
+				.Key("span_count").Value(route.elements[i].count)
+				.Key("time").Value(route.elements[i].time)
+				.EndDict();
+		}
+		build.EndArray().EndDict();
+
+		Print(Document{ build.Build() }, output);
+		output << std::endl;
 	}
 
 
