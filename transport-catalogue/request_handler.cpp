@@ -1,6 +1,7 @@
 #include "request_handler.h"
 #include "json.h"
 
+
 #include <unordered_set>
 #include <iostream>
 #include <algorithm>
@@ -17,9 +18,10 @@ OutRequests ProcessRequest(AddQuery add_query, std::vector<DirectoryRequest> dir
     for (auto& bus : add_query.bus_query) {
         transport_catalogue.AddBus(bus.name, bus.stops,bus.last_stop);
     }
-    transport_catalogue.AddRoutingSetting(rout_settings.bus_wait_time, rout_settings.bus_velocity);
-    transport_catalogue.CreateGraph();
-    graph::Router router(transport_catalogue.GetGraph());
+    TransportRouter transport_router(transport_catalogue);
+    transport_router.AddRoutingSetting(rout_settings.bus_wait_time, rout_settings.bus_velocity);
+    transport_router.CreateGraph();
+    graph::Router router(transport_router.GetGraph());
 
     OutRequests out_requests;
 
@@ -35,7 +37,7 @@ OutRequests ProcessRequest(AddQuery add_query, std::vector<DirectoryRequest> dir
                 out_requests.push_back(0);
             }
             else if (directory_request.type == "Route") {
-                out_requests.push_back(transport_catalogue.GetOptimalRoute(directory_request.from_stop,directory_request.to_stop,router));
+                out_requests.push_back(transport_router.GetOptimalRoute(directory_request.from_stop,directory_request.to_stop,router));
             }
         }
         catch (NoBuses error) {
