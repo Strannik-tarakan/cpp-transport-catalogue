@@ -3,7 +3,7 @@
 This program represents a transport catalog that allows users to add stops, buses, and distances between stops. It also provides functionality to find information about stops, buses, and distances.
 
 
-##Usage
+#Usage
 
 To use the Transport Catalog, follow these steps:
 
