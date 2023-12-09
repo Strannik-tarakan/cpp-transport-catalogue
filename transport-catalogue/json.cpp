@@ -35,16 +35,12 @@ namespace json {
             using namespace std::literals;
 
             std::string parsed_num;
-
-            // Считывает в parsed_num очередной символ из input
             auto read_char = [&parsed_num, &input] {
                 parsed_num += static_cast<char>(input.get());
                 if (!input) {
                     throw json::ParsingError("Failed to read number from stream"s);
                 }
             };
-
-            // Считывает одну или более цифр в parsed_num из input
             auto read_digits = [&input, read_char] {
                 if (!std::isdigit(input.peek())) {
                     throw json::ParsingError("A digit is expected"s);
@@ -57,24 +53,19 @@ namespace json {
             if (input.peek() == '-') {
                 read_char();
             }
-            // Парсим целую часть числа
             if (input.peek() == '0') {
                 read_char();
-                // После 0 в JSON не могут идти другие цифры
             }
             else {
                 read_digits();
             }
 
             bool is_int = true;
-            // Парсим дробную часть числа
             if (input.peek() == '.') {
                 read_char();
                 read_digits();
                 is_int = false;
             }
-
-            // Парсим экспоненциальную часть числа
             if (int ch = input.peek(); ch == 'e' || ch == 'E') {
                 read_char();
                 if (ch = input.peek(); ch == '+' || ch == '-') {
@@ -86,13 +77,10 @@ namespace json {
 
             try {
                 if (is_int) {
-                    // Сначала пробуем преобразовать строку в int
                     try {
                         return std::stoi(parsed_num);
                     }
                     catch (...) {
-                        // В случае неудачи, например, при переполнении,
-                        // код ниже попробует преобразовать строку в double
                     }
                 }
                 return std::stod(parsed_num);
@@ -110,24 +98,19 @@ namespace json {
             std::string s;
             while (true) {
                 if (it == end) {
-                    // Поток закончился до того, как встретили закрывающую кавычку?
                     throw json::ParsingError("String parsing error");
                 }
                 const char ch = *it;
                 if (ch == '"') {
-                    // Встретили закрывающую кавычку
                     ++it;
                     break;
                 }
                 else if (ch == '\\') {
-                    // Встретили начало escape-последовательности
                     ++it;
                     if (it == end) {
-                        // Поток завершился сразу после символа обратной косой черты
                         throw json::ParsingError("String parsing error");
                     }
                     const char escaped_char = *(it);
-                    // Обрабатываем одну из последовательностей: \\, \n, \t, \r, \"
                     switch (escaped_char) {
                     case 'n':
                         s.push_back('\n');
@@ -145,16 +128,13 @@ namespace json {
                         s.push_back('\\');
                         break;
                     default:
-                        // Встретили неизвестную escape-последовательность
                         throw json::ParsingError("Unrecognized escape sequence \\"s + escaped_char);
                     }
                 }
                 else if (ch == '\n' || ch == '\r') {
-                    // Строковый литерал внутри- JSON не может прерываться символами \r или \n
                     throw json::ParsingError("Unexpected end of line"s);
                 }
                 else {
-                    // Просто считываем очередной символ и помещаем его в результирующую строку
                     s.push_back(ch);
                 }
                 ++it;
@@ -170,7 +150,6 @@ namespace json {
                 if (c == ',') {
                     input >> c;
                 }
-
                 string key = LoadString(input).AsString();
                 input >> c;
                 result.insert({ move(key), LoadNode(input) });
