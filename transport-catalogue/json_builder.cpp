@@ -89,9 +89,6 @@ namespace json {
         if (nodes_stack_.empty() || !nodes_stack_.back()->IsMap() || key_) {
             throw std::logic_error("Invalid JSON - map was not open");
         }
-        /* if (nodes_stack_.size() == 1) {
-             root_ = nodes_stack_.back();
-         }*/
         nodes_stack_.pop_back();
         return *this;
     }
@@ -99,9 +96,6 @@ namespace json {
         if (nodes_stack_.empty() || !nodes_stack_.back()->IsArray()) {
             throw std::logic_error("Invalid JSON - array was not open");
         }
-        /* if (nodes_stack_.size() == 1) {
-             root_ = nodes_stack_.back();
-         }*/
         nodes_stack_.pop_back();
         return *this;
     }
